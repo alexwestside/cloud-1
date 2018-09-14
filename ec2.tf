@@ -3,6 +3,6 @@ resource "aws_instance" "my-test-instance" {
   instance_type   = "t2.micro"
 
   tags {
-    Name = "test-instance"
+    Name = "cloud-1"
   }
 }
