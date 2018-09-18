@@ -19,11 +19,11 @@ variable "instance_name2" {
 //}
 
 variable "access_key" {
-  default = "AKIAIRK5Y2OXQ45MMSLQ"
+  default = ""
 }
 
 variable "secret_key" {
-  default = "Pj/UKRwGGGSNn0yiK7fAbwlU5Lk8axDLHaQZP69W"
+  default = ""
 }
 
 
