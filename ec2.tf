@@ -1,58 +1,56 @@
 //# Create a VPC to launch our instances into
-//resource "aws_vpc" "default" {
-//  cidr_block = "10.0.0.0/16"
-//}
-//
-//resource "aws_security_group" "default" {
-//  name        = "cloud1_sg"
-//  description = "cloud1_security_group"
-//  vpc_id      = "${aws_vpc.default.id}"
-//
-//  # SSH access from anywhere
-//  ingress {
-//    from_port   = 22
-//    to_port     = 22
-//    protocol    = "tcp"
-//    cidr_blocks = ["0.0.0.0/0"]
-//  }
-//
-//  # HTTP access from the VPC
-//  ingress {
-//    from_port   = 80
-//    to_port     = 80
-//    protocol    = "tcp"
-//    cidr_blocks = ["10.0.0.0/16"]
-//  }
-//
-//  # outbound internet access
-//  egress {
-//    from_port   = 0
-//    to_port     = 0
-//    protocol    = "-1"
-//    cidr_blocks = ["0.0.0.0/0"]
-//  }
-//}
+resource "aws_security_group" "web" {
+  name = "vpc_web"
+  description = "Allow incoming HTTP connections."
 
-//
-//resource "aws_instance" "cloud1_1" {
-//  ami             = "${data.ami.ubuntu.id}"
-//  instance_type   = "${var.ec2_instance_type}"
-//
-//  tags {
-//    Name = "cloud1_1"
-//  }
-//}
-//
-//resource "aws_instance" "cloud1_2" {
-//  ami             = "${data.ami.ubuntu.id}"
-//  instance_type   = "${var.ec2_instance_type}"
-//
-//  tags {
-//    Name = "cloud1_2"
-//  }
-//}
+  ingress {
+    from_port = 80
+    to_port = 80
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port = 443
+    to_port = 443
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port = 22
+    to_port = 22
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port = -1
+    to_port = -1
+    protocol = "icmp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-resource "aws_instance" "cloud1" {
-  ami           = "ami-408c7f28"
-  instance_type = "t1.micro"
+  vpc_id = "${aws_vpc.default.id}"
+
+  tags {
+    Name = "Cloud-1"
+  }
+}
+
+resource "aws_instance" "cloud-1" {
+//  ami = "${lookup(var.ami_type, var.aws_region)}"
+  ami = "${data.aws_ami.ubuntu.id}"
+  availability_zone = "${var.aws_region}a"
+  instance_type = "${var.ec2_instance_type}"
+  vpc_security_group_ids = ["${aws_security_group.web.id}"]
+  subnet_id = "${aws_subnet.us-west-2a-public.id}"
+  associate_public_ip_address = true
+  source_dest_check = false
+
+  tags {
+    Name = "Cloud-1 service"
+  }
+}
+
+resource "aws_eip" "web-1" {
+  instance = "${aws_instance.cloud-1.id}"
+  vpc = true
 }
